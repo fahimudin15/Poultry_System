@@ -26,13 +26,25 @@ class SSEManager {
 
   public notifyClients() {
     const message = this.formatSSEMessage({ type: 'update' });
+    const closedClients = new Set<ReadableStreamController<Uint8Array>>();
+
     this.clients.forEach(client => {
       try {
+        // Check if the controller's desiredSize is null (indicates closed stream)
+        if (client.desiredSize === null) {
+          closedClients.add(client);
+          return;
+        }
         client.enqueue(message);
       } catch (error) {
         console.error('Error sending SSE update:', error);
-        this.clients.delete(client);
+        closedClients.add(client);
       }
+    });
+
+    // Clean up closed clients
+    closedClients.forEach(client => {
+      this.clients.delete(client);
     });
   }
 
