@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import { notifyClients } from '../updates/route';
+import { sseManager } from '../updates/route';
 
 export async function GET() {
   try {
@@ -30,6 +30,9 @@ export async function POST(request: Request) {
       status: 'pending' // Ensure status is set to pending for new orders
     });
 
+    // Notify clients of the update
+    sseManager.notifyClients();
+
     return NextResponse.json(order);
   } catch (error) {
     console.error('Error creating order:', error);
@@ -49,6 +52,9 @@ export async function DELETE(request: Request) {
     if (!order) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
+
+    // Notify clients of the update
+    sseManager.notifyClients();
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -73,10 +79,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // If the update includes a status change, notify all clients
-    if ('status' in updateData) {
-      notifyClients();
-    }
+    // Notify clients of the update
+    sseManager.notifyClients();
 
     return NextResponse.json(order);
   } catch (error) {

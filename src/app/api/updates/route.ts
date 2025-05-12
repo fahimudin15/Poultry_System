@@ -1,25 +1,59 @@
 import { NextResponse } from 'next/server';
 
-// Keep track of connected clients
-const clients = new Set<ReadableStreamController<Uint8Array>>();
+// Create a singleton for managing SSE clients
+class SSEManager {
+  private static instance: SSEManager;
+  private clients: Set<ReadableStreamController<Uint8Array>>;
+  private encoder: TextEncoder;
 
-// Create a TextEncoder instance for converting strings to Uint8Arrays
-const encoder = new TextEncoder();
+  private constructor() {
+    this.clients = new Set();
+    this.encoder = new TextEncoder();
+  }
 
-// Helper function to format SSE messages
-function formatSSEMessage(data: any) {
-  return encoder.encode(`data: ${JSON.stringify(data)}\n\n`);
+  public static getInstance(): SSEManager {
+    if (!SSEManager.instance) {
+      SSEManager.instance = new SSEManager();
+    }
+    return SSEManager.instance;
+  }
+
+  public addClient(controller: ReadableStreamController<Uint8Array>) {
+    this.clients.add(controller);
+  }
+
+  public removeClient(controller: ReadableStreamController<Uint8Array>) {
+    this.clients.delete(controller);
+  }
+
+  public notifyClients() {
+    const message = this.formatSSEMessage({ type: 'update' });
+    this.clients.forEach(client => {
+      try {
+        client.enqueue(message);
+      } catch (error) {
+        console.error('Error sending SSE update:', error);
+        this.clients.delete(client);
+      }
+    });
+  }
+
+  public formatSSEMessage(data: any) {
+    return this.encoder.encode(`data: ${JSON.stringify(data)}\n\n`);
+  }
 }
+
+// Export the singleton instance
+export const sseManager = SSEManager.getInstance();
 
 export async function GET() {
   const stream = new ReadableStream({
     start(controller) {
-      clients.add(controller);
-      controller.enqueue(formatSSEMessage({ type: 'connected' }));
+      sseManager.addClient(controller);
+      controller.enqueue(sseManager.formatSSEMessage({ type: 'connected' }));
 
-      // Remove client when connection closes
       return () => {
-        clients.delete(controller);
+        sseManager.removeClient(controller);
       };
     }
   });
@@ -29,20 +63,6 @@ export async function GET() {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive'
-    }
-  });
-}
-
-// Helper function to notify all clients
-export function notifyClients() {
-  const encodedMessage = formatSSEMessage({ type: 'update' });
-  
-  clients.forEach(client => {
-    try {
-      client.enqueue(encodedMessage);
-    } catch (error) {
-      console.error('Error sending SSE update:', error);
-      clients.delete(client);
     }
   });
 } 
