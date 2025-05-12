@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
-import { sseManager } from '../updates/route';
+import { sseManager } from '@/lib/sseManager';
 
 export async function GET() {
   try {
