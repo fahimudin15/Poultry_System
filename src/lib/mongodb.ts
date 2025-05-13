@@ -8,8 +8,11 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 const options: mongoose.ConnectOptions = {
   bufferCommands: true,
-  serverSelectionTimeoutMS: 5000,
-  family: 4
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  family: 4,
+  retryWrites: true,
+  w: 'majority'
 };
 
 let cached = {
@@ -20,18 +23,23 @@ let cached = {
 async function connectDB() {
   try {
     if (cached.conn) {
+      console.log('Using cached MongoDB connection');
       return cached.conn;
     }
 
     if (!cached.promise) {
-      cached.promise = mongoose.connect(MONGODB_URI, options).then(mongoose => mongoose.connection);
+      console.log('Creating new MongoDB connection');
+      cached.promise = mongoose.connect(MONGODB_URI, options).then(mongoose => {
+        console.log('MongoDB connected successfully');
+        return mongoose.connection;
+      });
     }
 
     cached.conn = await cached.promise;
     return cached.conn;
   } catch (error) {
-    cached.promise = null;
     console.error('MongoDB connection error:', error);
+    cached.promise = null;
     throw error;
   }
 }
