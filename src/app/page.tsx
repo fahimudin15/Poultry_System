@@ -99,19 +99,6 @@ export default function Home() {
           <div className="text-4xl mt-2">{stats.pendingOrders}</div>
         </div>
       </div>
-
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Recent Orders</h2>
-        <div className="bg-[#2D2D2D] text-white">
-          <div className="grid grid-cols-5 p-2">
-            <div>ID</div>
-            <div>Customer Name</div>
-            <div>Number of Crates</div>
-            <div>Price</div>
-            <div>Due Time</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

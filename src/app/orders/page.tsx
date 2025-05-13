@@ -261,23 +261,18 @@ export default function Orders() {
                 }`}
               >
                 <td className="py-2 px-3">
-                  <button
-                    onClick={() => handleToggleStatus(order)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      order.status === 'completed'
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                    }`}
-                  >
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    order.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
+                  } text-white`}>
                     {order.status === 'completed' ? 'Completed' : 'Pending'}
-                  </button>
+                  </span>
                 </td>
                 <td className="py-2 px-3">{order.id}</td>
                 <td className="py-2 px-3">{order.customerName}</td>
                 <td className="py-2 px-3">{order.numberOfCrates}</td>
                 <td className="py-2 px-3">₦{order.price.toLocaleString()}</td>
                 <td className="py-2 px-3">{formatDateTime(order.dueTime)}</td>
-                <td className="py-2 px-3 space-x-1">
+                <td className="py-2 px-3 space-x-2">
                   <button 
                     onClick={() => handleDelete(order._id)}
                     className="bg-[#DC3545] text-white px-2 py-[3px] rounded text-sm hover:bg-[#bb2d3b]"
@@ -296,6 +291,21 @@ export default function Orders() {
                   >
                     Details
                   </button>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={order.status === 'completed'}
+                      onChange={() => handleToggleStatus(order)}
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer 
+                      peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
+                      peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] 
+                      after:start-[2px] after:bg-white after:border-gray-300 after:border 
+                      after:rounded-full after:h-5 after:w-5 after:transition-all 
+                      peer-checked:bg-green-500">
+                    </div>
+                  </label>
                 </td>
               </tr>
             ))}
