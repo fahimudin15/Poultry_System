@@ -403,9 +403,6 @@ export default function Orders() {
               {selectedOrder.createdAt && (
                 <p><strong>Created At:</strong> {formatDateTime(selectedOrder.createdAt)}</p>
               )}
-              {selectedOrder.updatedAt && (
-                <p><strong>Last Updated:</strong> {formatDateTime(selectedOrder.updatedAt)}</p>
-              )}
             </div>
             <div className="mt-6 flex justify-end">
               <button
